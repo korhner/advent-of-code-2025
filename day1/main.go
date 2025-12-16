@@ -3,23 +3,36 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
 
 type Clock struct {
 	CurrentState int
+	TouchedZero  int
 }
 
 func (c *Clock) Rotate(degrees int) {
-	c.CurrentState += degrees
-	c.CurrentState %= 100
-	if c.CurrentState < 0 {
-		c.CurrentState += 100
+
+	c.TouchedZero += int(math.Abs(float64(degrees)) / 100)
+	degrees = degrees % 100
+
+	newState := c.CurrentState + degrees
+	if newState < 0 {
+		newState += 100
+	} else if newState >= 100 {
+		newState -= 100
 	}
 
-	fmt.Println("Rotated to:", c.CurrentState)
-
+	if c.CurrentState != 0 &&
+		(newState == 0 ||
+			(degrees < 0 && newState > c.CurrentState) ||
+			(degrees > 0 && newState < c.CurrentState)) {
+		c.TouchedZero++
+	}
+	println("Rotated from", c.CurrentState, "by:", degrees, "to:", newState, "TouchedZero:", c.TouchedZero)
+	c.CurrentState = newState
 }
 
 func main() {
@@ -69,4 +82,5 @@ func main() {
 	}
 
 	fmt.Println("Number of times clock hit 0:", numZeros)
+	fmt.Println("Number of times clock touched 0:", clock.TouchedZero)
 }
