@@ -2,8 +2,6 @@ package main
 
 import "errors"
 
-type Matrix [][]rune
-
 type Position struct {
 	Row int
 	Col int
@@ -32,6 +30,8 @@ var (
 	}
 )
 
+type Matrix [][]rune
+
 func NewMatrix(rows, cols int) Matrix {
 	m := make(Matrix, rows)
 	for i := range m {
@@ -57,4 +57,14 @@ func (m Matrix) GetSafe(row, col int) (rune, error) {
 		return 0, errors.New("index out of bounds")
 	}
 	return m[row][col], nil
+}
+
+type VisitedMatrix [][]bool
+
+func NewVisitedMatrix(matrix Matrix) VisitedMatrix {
+	vm := make(VisitedMatrix, len(matrix))
+	for i := range vm {
+		vm[i] = make([]bool, len(matrix[0]))
+	}
+	return vm
 }
