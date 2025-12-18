@@ -54,5 +54,6 @@ func main() {
 	}
 
 	fmt.Println("Total fresh points:", fresh)
+	fmt.Println("Total ranges covered:", intervalsSet.Range())
 
 }

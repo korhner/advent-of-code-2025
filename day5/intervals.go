@@ -16,6 +16,10 @@ func (iv Interval) Contains(point int) bool {
 	return point >= iv.Start && point <= iv.End
 }
 
+func (iv Interval) Range() int {
+	return iv.End - iv.Start + 1
+}
+
 type IntervalSet []Interval
 
 func NewIntervalSet(intervals ...Interval) IntervalSet {
@@ -53,6 +57,14 @@ func (set IntervalSet) Contains(point int) bool {
 		}
 	}
 	return false
+}
+
+func (set IntervalSet) Range() int {
+	total := 0
+	for _, iv := range set {
+		total += iv.Range()
+	}
+	return total
 }
 
 func (set IntervalSet) toString() string {
