@@ -1,5 +1,7 @@
 package main
 
+type Operator string
+
 type OperatorList struct {
 	Operands []int
 	Operator Operator

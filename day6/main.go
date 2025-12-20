@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-type Operator string
-
 func parse() []OperatorList {
 
 	var OperatorLists []OperatorList
@@ -34,13 +32,88 @@ func parse() []OperatorList {
 	return OperatorLists
 }
 
-func main() {
-	operatorLists := parse()
-	total := 0
-	for _, ol := range operatorLists {
-		total += ol.Evaluate()
+func parsePart2() int {
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	var lines []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
 	}
 
-	fmt.Println("Evaluation total:", total)
+	var splits []int
+	splits = append(splits, 0)
+	for i, _ := range lines[0] {
+		isSplit := true
+		for j := 0; j < len(lines); j++ {
+			if lines[j][i] != ' ' {
+				isSplit = false
+				break
+			}
+		}
+		if isSplit {
+			splits = append(splits, i)
+		}
+	}
+	splits = append(splits, len(lines[0]))
+	fmt.Println("Splits:", splits)
+
+	var operators []string
+	for _, ch := range lines[len(lines)-1] {
+		if ch != ' ' {
+			operators = append(operators, string(ch))
+		}
+	}
+	fmt.Println("Operators:", operators)
+
+	total := 0
+
+	for i := 0; i < len(splits)-1; i++ {
+		start := splits[i]
+		end := splits[i+1]
+
+		columnTotal := 0
+		if operators[i] == "*" {
+			columnTotal = 1
+		}
+
+		for c := start; c < end; c++ {
+			number := 0
+
+			for j := 0; j < len(lines)-1; j++ {
+				if lines[j][c] != ' ' {
+					digit, _ := strconv.Atoi(string(lines[j][c]))
+					number = number*10 + digit
+				}
+			}
+
+			if number > 0 {
+				if operators[i] == "+" {
+					columnTotal += number
+				} else {
+					columnTotal *= number
+				}
+			}
+		}
+
+		fmt.Println("Column total:", columnTotal)
+		total += columnTotal
+	}
+
+	fmt.Println("Total:", total)
+	return total
+
+}
+
+func main() {
+	//operatorLists := parse()
+	//total := 0
+	//for _, ol := range operatorLists {
+	//	total += ol.Evaluate()
+	//}
+	//fmt.Println("Evaluation total:", total)
+
+	parsePart2()
 
 }
