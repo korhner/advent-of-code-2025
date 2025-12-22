@@ -3,16 +3,22 @@ package main
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
-type Cell rune
+type CellType rune
 
 const (
-	EmptyCell    Cell = '.'
-	StartCell    Cell = 'S'
-	SplitterCell Cell = '^'
-	BeamCell     Cell = '|'
+	EmptyCell    CellType = '.'
+	StartCell    CellType = 'S'
+	SplitterCell CellType = '^'
+	BeamCell     CellType = '|'
 )
+
+type Cell struct {
+	CellType CellType
+	Count    int
+}
 
 type Coordinate struct {
 	X int
@@ -31,10 +37,11 @@ func NewBoard(lines []string) *Board {
 	for y, line := range lines {
 		row := make([]Cell, len(line))
 		for x, char := range line {
-			row[x] = Cell(char)
-			if char == 'S' {
+			row[x].CellType = CellType(char)
+			if CellType(char) == StartCell {
 				startCell = Coordinate{X: x, Y: y}
-				row[x] = BeamCell
+				row[x].CellType = BeamCell
+				row[x].Count = 1
 			}
 		}
 		cells[y] = row
@@ -50,30 +57,38 @@ func (b *Board) String() string {
 	result := ""
 	for _, row := range b.Cells {
 		for _, cell := range row {
-			result += string(cell)
+			if cell.CellType == BeamCell {
+				result += fmt.Sprintf("%d", cell.Count)
+			} else {
+				result += string(cell.CellType)
+			}
 		}
 		result += "\n"
 	}
 	return result
 }
 
-func (b *Board) SimulateTick() (int, error) {
+func (b *Board) SimulateTick() (splits int, err error) {
 	nextGenBeams := []Coordinate{}
-	splits := 0
 	for _, beam := range b.Beams {
 		if beam.Y < len(b.Cells)-1 {
-			if b.Cells[beam.Y+1][beam.X] == EmptyCell {
-				b.Cells[beam.Y+1][beam.X] = BeamCell
+			if b.Cells[beam.Y+1][beam.X].CellType == EmptyCell {
+				b.Cells[beam.Y+1][beam.X].CellType = BeamCell
+				b.Cells[beam.Y+1][beam.X].Count += b.Cells[beam.Y][beam.X].Count
 				nextGenBeams = append(nextGenBeams, Coordinate{X: beam.X, Y: beam.Y + 1})
-			} else if b.Cells[beam.Y+1][beam.X] == SplitterCell {
+
+			} else if b.Cells[beam.Y+1][beam.X].CellType == SplitterCell {
 				splits++
-				if beam.X > 0 && b.Cells[beam.Y+1][beam.X-1] == EmptyCell {
-					b.Cells[beam.Y+1][beam.X-1] = BeamCell
+				b.Cells[beam.Y+1][beam.X-1].Count += b.Cells[beam.Y][beam.X].Count
+				b.Cells[beam.Y+1][beam.X+1].Count += b.Cells[beam.Y][beam.X].Count
+
+				if b.Cells[beam.Y+1][beam.X-1].CellType == EmptyCell {
+					b.Cells[beam.Y+1][beam.X-1].CellType = BeamCell
 					nextGenBeams = append(nextGenBeams, Coordinate{X: beam.X - 1, Y: beam.Y + 1})
 				}
 
-				if beam.X < len(b.Cells[0])-1 && b.Cells[beam.Y+1][beam.X+1] == EmptyCell {
-					b.Cells[beam.Y+1][beam.X+1] = BeamCell
+				if b.Cells[beam.Y+1][beam.X+1].CellType == EmptyCell {
+					b.Cells[beam.Y+1][beam.X+1].CellType = BeamCell
 					nextGenBeams = append(nextGenBeams, Coordinate{X: beam.X + 1, Y: beam.Y + 1})
 				}
 
@@ -97,9 +112,18 @@ func (b *Board) Simulate() {
 			break
 		}
 		splits += newSplits
-		fmt.Println("-------------------------------------")
+		fmt.Print("\033[H\033[2J")
 		fmt.Println(b.String())
+		time.Sleep(300 * time.Millisecond)
 	}
 
 	fmt.Println("Splits created:", splits)
+
+	paths := 0
+	for _, path := range b.Cells[len(b.Cells)-1] {
+		if path.CellType == BeamCell {
+			paths += path.Count
+		}
+	}
+	fmt.Println("Paths created:", paths)
 }
