@@ -4,24 +4,7 @@ import (
 	"bufio"
 	"math"
 	"os"
-	"strconv"
-	"strings"
 )
-
-type Point struct {
-	X int
-	Y int
-}
-
-func NewPointFromString(s string) *Point {
-	tokens := strings.Split(s, ",")
-	x, _ := strconv.Atoi(tokens[0])
-	y, _ := strconv.Atoi(tokens[1])
-	return &Point{
-		X: x,
-		Y: y,
-	}
-}
 
 func parsePoints() []Point {
 	var points []Point
@@ -33,8 +16,7 @@ func parsePoints() []Point {
 	return points
 }
 
-func main() {
-	points := parsePoints()
+func part1(points []Point) {
 	maxArea := 0.0
 
 	for i := 0; i < len(points); i++ {
@@ -48,4 +30,23 @@ func main() {
 	}
 
 	println("Max Area:", int(maxArea))
+}
+
+func part2(points []Point) {
+	// create the polygon
+	// find the bounding box
+
+	// slowly reduce the bounding box along sides until it fits inside the polygon
+
+	// implement a function to check if a rectangle fits inside the polygon
+	// it fits if all four corners are inside the polygon
+	// and no edges intersect with the polygon edges
+	// a point is inside the polygon if a ray from the point to infinity intersects the polygon edges an odd number of times
+
+	// keep track of the max area
+}
+
+func main() {
+	points := parsePoints()
+	part1(points)
 }
