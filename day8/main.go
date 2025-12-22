@@ -92,15 +92,8 @@ func (pd *PointDistances) PopClosestPair() *PairDistance {
 	return closest
 }
 
-func part1(points []*Point3D) {
+func part1(pointDistances *PointDistances, unionFind *UnionFind[Point3D]) {
 	const iterations = 1000
-
-	pointDistances := NewPointDistances(points)
-
-	unionFind := NewUnionFind[Point3D]()
-	for _, point := range points {
-		unionFind.Find(point)
-	}
 
 	for i := 0; i < iterations; i++ {
 		closestPair := pointDistances.PopClosestPair()
@@ -123,7 +116,35 @@ func part1(points []*Point3D) {
 	}
 	fmt.Println("Product of top 3 cluster sizes:", product)
 }
+
+func part2(pointDistances *PointDistances, unionFind *UnionFind[Point3D]) {
+	for {
+		closestPair := pointDistances.PopClosestPair()
+		if !unionFind.Union(closestPair.PointFrom, closestPair.PointTo) {
+			continue
+		}
+		if unionFind.Count == 1 {
+			fmt.Println("All points connected. ", closestPair.PointFrom.X*closestPair.PointTo.X)
+			break
+		} else {
+			numRoots := 0
+			for point, parent := range unionFind.Parent {
+				if point == parent {
+					numRoots++
+				}
+			}
+		}
+
+	}
+}
 func main() {
 	points := parse()
-	part1(points)
+	pointDistances := NewPointDistances(points)
+
+	unionFind := NewUnionFind[Point3D]()
+	for _, point := range points {
+		unionFind.Find(point)
+	}
+
+	part2(pointDistances, unionFind)
 }
