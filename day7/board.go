@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"time"
 )
 
 type CellType rune
@@ -58,9 +57,9 @@ func (b *Board) String() string {
 	for _, row := range b.Cells {
 		for _, cell := range row {
 			if cell.CellType == BeamCell {
-				result += fmt.Sprintf("%d", cell.Count)
+				result += fmt.Sprintf("%3d", cell.Count)
 			} else {
-				result += string(cell.CellType)
+				result += fmt.Sprintf("%3c", cell.CellType)
 			}
 		}
 		result += "\n"
@@ -72,12 +71,15 @@ func (b *Board) SimulateTick() (splits int, err error) {
 	nextGenBeams := []Coordinate{}
 	for _, beam := range b.Beams {
 		if beam.Y < len(b.Cells)-1 {
-			if b.Cells[beam.Y+1][beam.X].CellType == EmptyCell {
-				b.Cells[beam.Y+1][beam.X].CellType = BeamCell
+			if b.Cells[beam.Y+1][beam.X].CellType != SplitterCell {
 				b.Cells[beam.Y+1][beam.X].Count += b.Cells[beam.Y][beam.X].Count
-				nextGenBeams = append(nextGenBeams, Coordinate{X: beam.X, Y: beam.Y + 1})
 
-			} else if b.Cells[beam.Y+1][beam.X].CellType == SplitterCell {
+				if b.Cells[beam.Y+1][beam.X].CellType == EmptyCell {
+					b.Cells[beam.Y+1][beam.X].CellType = BeamCell
+					nextGenBeams = append(nextGenBeams, Coordinate{X: beam.X, Y: beam.Y + 1})
+				}
+
+			} else {
 				splits++
 				b.Cells[beam.Y+1][beam.X-1].Count += b.Cells[beam.Y][beam.X].Count
 				b.Cells[beam.Y+1][beam.X+1].Count += b.Cells[beam.Y][beam.X].Count
@@ -112,9 +114,9 @@ func (b *Board) Simulate() {
 			break
 		}
 		splits += newSplits
-		fmt.Print("\033[H\033[2J")
-		fmt.Println(b.String())
-		time.Sleep(300 * time.Millisecond)
+		//fmt.Print("\033[H\033[2J")
+		//fmt.Println(b.String())
+		//time.Sleep(300 * time.Millisecond)
 	}
 
 	fmt.Println("Splits created:", splits)
